@@ -1,3 +1,8 @@
+
+import { NavLink } from "react-router-dom";
+
+
+
 function Navbar() {
   return (
     <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-lg shadow-lg border-b border-slate-200">
@@ -11,10 +16,9 @@ function Navbar() {
 
         {/* Navigation Links */}
         <nav className="hidden md:flex gap-10 text-xl font-semibold text-slate-700">
-          <a href="#home" className="hover:text-indigo-600 transition">Home</a>
-          <a href="#features" className="hover:text-indigo-600 transition">Features</a>
-          <a href="#features" className="hover:text-indigo-600 transition">Visualise</a>
-          
+         <NavLink to="/" className="hover:text-indigo-600 transition">Home </NavLink>
+           <NavLink to="/features" className="hover:text-indigo-600 transition">Features</NavLink>
+          <NavLink to ="/visualise" className="hover:text-indigo-600 transition">Visualise</NavLink>
         </nav>
 
         {/* Login + Sign Up buttons (same color theme) */}
