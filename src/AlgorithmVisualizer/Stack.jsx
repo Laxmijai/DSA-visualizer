@@ -1,16 +1,19 @@
 import React from "react";
 import { FiChevronRight } from "react-icons/fi";
+import { NavLink } from "react-router-dom";
 
 const Stack = () => {
-  const operations = ["Push & Pop", "Peek", "Is Empty", "Is Full"];
+  const operations = ["Push and Pop", "Peek", "Is Empty", "Is Full"];
 
   const polish = ["Postfix", "Prefix"];
 
   const implementation = ["Using Array", "Using Linked List"];
 
   // Card Component
-  const Card = ({ title }) => (
-    <div
+
+  const Card = ({ title,to }) => (
+     
+   <NavLink to={to}
       className="
         group flex items-center justify-between
         px-6 py-4
@@ -20,7 +23,7 @@ const Stack = () => {
         transition-all duration-300 ease-in-out
         hover:bg-blue-50 hover:border-blue-600 hover:shadow-lg
       "
-    >
+  >
       <span className="text-gray-800 font-medium group-hover:text-blue-700 transition-all duration-300 ease-in-out">
         {title}
       </span>
@@ -28,8 +31,10 @@ const Stack = () => {
       <FiChevronRight
         className="text-gray-500 text-lg group-hover:text-blue-600 transition-all duration-300 ease-in-out"
       />
-    </div>
+    
+     </NavLink>
   );
+  
 
   return (
     <div className="w-full flex justify-center mt-14">
@@ -65,7 +70,9 @@ const Stack = () => {
 
           <div className="flex flex-wrap gap-4">
             {operations.map((item, i) => (
-              <Card key={i} title={item} />
+              <Card key={i} 
+              title={item} 
+             to={`/stack/${item.toLowerCase().replace(/ /g, "-")}`}/>
             ))}
           </div>
         </div>
@@ -81,7 +88,10 @@ const Stack = () => {
 
           <div className="flex flex-wrap gap-4">
             {polish.map((item, i) => (
-              <Card key={i} title={item} />
+              <Card key={i}
+               title={item}
+                 to={`/stack/${item.toLowerCase().replace(/ /g, "-")}`}
+                />
             ))}
           </div>
         </div>
@@ -97,7 +107,9 @@ const Stack = () => {
 
           <div className="flex flex-wrap gap-4">
             {implementation.map((item, i) => (
-              <Card key={i} title={item} />
+              <Card key={i} 
+              title={item} 
+               to={`/stack/${item.toLowerCase().replace(/ /g, "-")}`} />
             ))}
           </div>
         </div>
