@@ -1,56 +1,46 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
-/**
- * InsertionSort.jsx
- * - ESLint-safe: no setState called synchronously inside useEffect
- * - Initial array created via useState lazy initializer
- * - All original logic preserved (animations, controls)
- */
-
-const createRandomArray = (len = 10) =>
-  Array.from({ length: len }, () => Math.floor(Math.random() * 90) + 10);
-
-const InsertionSort = () => {
+const SelectionSort = () => {
   const [activeTab, setActiveTab] = useState("visualization");
-
-  // Initialize array once using lazy initializer to avoid setState in an effect
-  const [array, setArray] = useState(() => createRandomArray());
+  const [array, setArray] = useState([]);
   const [input, setInput] = useState("");
   const [speed, setSpeed] = useState(650);
   const [isSorting, setIsSorting] = useState(false);
 
-  const [iPointer, setIPointer] = useState(null);
-  const [jPointer, setJPointer] = useState(null);
-  const [keyIndex, setKeyIndex] = useState(null);
+  const [current, setCurrent] = useState(null);      // i pointer
+  const [minIndex, setMinIndex] = useState(null);    // REAL minimum index
+  const [jPointer, setJPointer] = useState(null);    // j pointer visual only
+
   const [sortedUpto, setSortedUpto] = useState(-1);
-  const [passCount, setPassCount] = useState(0);
   const [stepInfo, setStepInfo] = useState("Click Start to begin.");
+  const [passCount, setPassCount] = useState(0);
 
   const barRefs = useRef([]);
   const isSortingRef = useRef(false);
 
-  // --------------------------------------------------
-  // GENERATE RANDOM ARRAY (callable by button)
-  // --------------------------------------------------
-  const generateArray = (len = 10) => {
-    const arr = createRandomArray(len);
+  // Generate random array
+  const generateArray = () => {
+    const arr = Array.from({ length: 10 }, () =>
+      Math.floor(Math.random() * 90) + 10
+    );
 
     setArray(arr);
-    setIPointer(null);
+    setCurrent(null);
+    setMinIndex(null);
     setJPointer(null);
-    setKeyIndex(null);
-    setPassCount(0);
     setSortedUpto(-1);
+    setPassCount(0);
 
-    isSortingRef.current = false;
     setIsSorting(false);
+    isSortingRef.current = false;
+
     setStepInfo("Random array generated. Click Start.");
   };
 
-  // --------------------------------------------------
-  // CUSTOM ARRAY
-  // --------------------------------------------------
+  useEffect(() => generateArray(), []);
+
+  // Custom array
   const setCustomArray = () => {
     const nums = input
       .split(",")
@@ -60,106 +50,107 @@ const InsertionSort = () => {
     if (!nums.length) return alert("Enter a valid array");
 
     setArray(nums);
-    setIPointer(null);
+    setCurrent(null);
+    setMinIndex(null);
     setJPointer(null);
-    setKeyIndex(null);
-    setPassCount(0);
     setSortedUpto(-1);
+    setPassCount(0);
 
-    isSortingRef.current = false;
     setIsSorting(false);
+    isSortingRef.current = false;
+
     setStepInfo("Custom array set. Click Start.");
   };
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  // --------------------------------------------------
-  // INSERTION SORT WITH SAFE ANIMATION
-  // --------------------------------------------------
-  const insertionSort = async () => {
+  // Selection Sort Logic
+  const selectionSort = async () => {
     if (isSortingRef.current) return;
 
-    isSortingRef.current = true;
     setIsSorting(true);
+    isSortingRef.current = true;
 
     let arr = [...array];
 
-    for (let i = 1; i < arr.length; i++) {
+    for (let i = 0; i < arr.length; i++) {
       if (!isSortingRef.current) return;
 
-      setPassCount(i);
-      let key = arr[i];
-      let j = i - 1;
+      setPassCount(i + 1);
+      setCurrent(i);
 
-      setIPointer(i);
-      setKeyIndex(i);
-      setStepInfo(`Picking key = ${key}`);
+      let min = i;
+      setMinIndex(i); // first min
+
+      setStepInfo(`Pass ${i + 1}: starting minimum = ${arr[i]}`);
       await sleep(speed);
 
-      while (j >= 0 && arr[j] > key) {
+      // Scan j
+      for (let j = i + 1; j < arr.length; j++) {
         if (!isSortingRef.current) return;
 
-        setJPointer(j);
-        setStepInfo(`Comparing ${key} with ${arr[j]} → shifting`);
+        setJPointer(j); // move j pointer visually
         await sleep(speed);
 
-        const A = barRefs.current[j];
-        const B = barRefs.current[j + 1];
-
-        // SAFE MOVE (without updating values yet)
-        if (A && B) {
-          A.style.transition = "transform 0.2s ease";
-          B.style.transition = "transform 0.2s ease";
-
-          A.style.transform = "translateX(14px)";
-          B.style.transform = "translateX(-14px)";
+        if (arr[j] < arr[min]) {
+          min = j;
+          setMinIndex(j); // update popup + yellow min bar
+          setStepInfo(`New minimum found → ${arr[min]}`);
+        } else {
+          setStepInfo(`Comparing ${arr[j]} with current min ${arr[min]}`);
         }
-
-        await sleep(speed);
-
-        if (A && B) {
-          A.style.transform = "translateX(0px)";
-          B.style.transform = "translateX(0px)";
-        }
-
-        // NOW update actual array AFTER animation
-        arr[j + 1] = arr[j];
-        setArray([...arr]);
-        await sleep(60);
-
-        j--;
       }
 
-      setStepInfo(`Placing key ${key}`);
+      // Swap
+      if (min !== i && isSortingRef.current) {
+        setStepInfo(`Swapping ${arr[i]} ↔ ${arr[min]}`);
+        await sleep(speed);
 
-      arr[j + 1] = key;
-      setArray([...arr]);
-      await sleep(speed);
+        const A = barRefs.current[i];
+        const B = barRefs.current[min];
 
+        if (A && B) {
+          A.style.transform = "translate(20px, -25px)";
+          B.style.transform = "translate(-20px, -25px)";
+        }
+        await sleep(speed);
+
+        if (A && B) {
+          A.style.transform = "translate(0,0)";
+          B.style.transform = "translate(0,0)";
+        }
+
+        [arr[i], arr[min]] = [arr[min], arr[i]];
+        setArray([...arr]);
+        await sleep(speed);
+      }
+
+      // Mark sorted
       setSortedUpto(i);
+      setStepInfo(`Index ${i} sorted.`);
+      await sleep(speed);
     }
 
     setStepInfo("Array fully sorted 🎉");
-    isSortingRef.current = false;
     setIsSorting(false);
-    setIPointer(null);
+    isSortingRef.current = false;
+
+    setCurrent(null);
+    setMinIndex(null);
     setJPointer(null);
-    setKeyIndex(null);
   };
 
   const pauseSorting = () => {
-    isSortingRef.current = false;
     setIsSorting(false);
+    isSortingRef.current = false;
     setStepInfo("Paused");
   };
 
-  // --------------------------------------------------
-  // UI
-  // --------------------------------------------------
   return (
-    <div className="w-full flex flex-col items-center p-6 mt-10">
-      <h1 className="text-4xl font-bold text-gray-900">Insertion Sort</h1>
-      <p className="text-gray-600 mt-1">Shift Animation · No Value Glitch</p>
+    <div className="w-full flex flex-col items-center p-6 mt-10 relative">
+
+      <h1 className="text-4xl font-bold text-gray-900">Selection Sort</h1>
+      <p className="text-gray-600 mt-1">Clean Visualization + Min Tracking + Arrows</p>
 
       {/* Tabs */}
       <div className="w-full max-w-4xl mt-8">
@@ -188,11 +179,14 @@ const InsertionSort = () => {
         </div>
       </div>
 
-      {/* Card */}
+      {/* Main Card */}
       <div className="w-full max-w-6xl bg-white shadow-xl rounded-2xl p-8 mt-6">
+
+        {/* ========================= VISUALIZATION ========================= */}
         {activeTab === "visualization" && (
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* LEFT PANEL */}
+
+            {/* LEFT CONTROLS */}
             <div className="w-full lg:w-1/3 bg-white/80 border rounded-2xl p-6 shadow-lg">
               <h2 className="text-2xl font-bold mb-4">⚙️ Controls</h2>
 
@@ -212,7 +206,7 @@ const InsertionSort = () => {
               </button>
 
               <button
-                onClick={() => generateArray()}
+                onClick={generateArray}
                 className="w-full mt-4 py-3 bg-red-500 text-white rounded-xl"
               >
                 🔄 Random Array
@@ -220,7 +214,7 @@ const InsertionSort = () => {
 
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={insertionSort}
+                  onClick={selectionSort}
                   disabled={isSorting}
                   className="flex-1 py-3 bg-green-600 disabled:bg-gray-400 text-white rounded-xl"
                 >
@@ -246,68 +240,64 @@ const InsertionSort = () => {
               />
             </div>
 
-            {/* VISUALIZER */}
+            {/* ===================== VISUALIZER ===================== */}
             <div className="w-full lg:w-2/3 flex flex-col items-center relative">
-              <div
-                className="
-                  w-full h-[350px] bg-gray-50 border rounded-xl 
-                  p-6 pt-14 flex items-end justify-center gap-6 
-                  overflow-visible relative
-                "
-              >
+
+              {/* Bars Area */}
+              <div className="w-full h-[350px] bg-gray-50 border rounded-xl p-6 pt-14 flex items-end justify-center gap-6 overflow-hidden">
+
                 {array.map((value, index) => {
-                  const isKey = index === keyIndex;
                   const isSorted = index <= sortedUpto;
-                  const maxVal = Math.max(...array);
-                  const heightPx = (value / maxVal) * 250;
 
                   return (
                     <div key={index} className="flex flex-col items-center">
-                      {/* POINTERS */}
-                      <div className="relative h-4 mb-1">
-                        {index === iPointer && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs text-yellow-600 font-bold">
-                            ⬇ i
-                          </div>
-                        )}
-                        {index === jPointer && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs text-yellow-600 font-bold">
-                            ⬇ j
-                          </div>
-                        )}
-                        {isKey && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs text-blue-600 font-bold">
-                            ⬇ key
-                          </div>
-                        )}
-                      </div>
 
-                      {/* BAR */}
+                      {index === current && (
+                        <p className="text-xs text-yellow-600 font-bold mb-1">⬇ i</p>
+                      )}
+
+                      {index === jPointer && (
+                        <p className="text-xs text-yellow-600 font-bold mb-1">⬇ j</p>
+                      )}
+
                       <motion.div
                         ref={(el) => (barRefs.current[index] = el)}
                         className={`w-10 rounded-t-md ${
                           isSorted
                             ? "bg-green-600"
-                            : isKey || index === iPointer || index === jPointer
+                            : index === current || index === jPointer || index === minIndex
                             ? "bg-yellow-400"
                             : "bg-blue-400"
                         }`}
-                        style={{ height: `${heightPx}px` }}
+                        style={{ height: `${value * 3}px` }}
                         transition={{ type: "spring", stiffness: 120 }}
-                      />
+                      ></motion.div>
 
                       <p className="mt-2 font-semibold">{value}</p>
+                      {isSorted && (
+                        <p className="text-xs text-green-600 font-semibold">
+                          Sorted
+                        </p>
+                      )}
                     </div>
                   );
                 })}
               </div>
 
+              {/* PASS + POPUP (equal spacing) */}
               <div className="w-full flex justify-between items-center mt-4 px-6">
                 <p className="text-md font-semibold text-gray-700">
                   Pass: {passCount}
                 </p>
+
+                {minIndex !== null && isSortingRef.current && (
+                  <div className="px-4 py-2 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-md shadow">
+                    Current min: <b>{array[minIndex]}</b>
+                  </div>
+                )}
               </div>
 
+              {/* Step Info */}
               <div className="mt-4 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-xl shadow-md w-full text-center text-lg font-semibold">
                 {stepInfo}
               </div>
@@ -315,24 +305,27 @@ const InsertionSort = () => {
           </div>
         )}
 
-        {/* EXPLANATION TAB */}
+        {/* ========================= EXPLANATION TAB ========================= */}
         {activeTab === "explanation" && (
           <div className="text-lg text-gray-700">
-            <h2 className="text-2xl font-bold mb-4">Insertion Sort Explanation</h2>
+            <h2 className="text-2xl font-bold mb-4">Selection Sort Explanation</h2>
             <p>
-              Insertion Sort builds a sorted part on the left by shifting elements.
+              Selection Sort finds the smallest element in each pass and places
+              it at its correct sorted position.
             </p>
             <ul className="list-disc ml-6 mt-3 leading-8">
-              <li>Pick a key element</li>
-              <li>Shift larger elements right</li>
-              <li>Insert key in correct position</li>
-              <li>Sorted section grows each pass</li>
+              <li>Select index i</li>
+              <li>Scan the rest of the array with j</li>
+              <li>Track the minimum found</li>
+              <li>Swap minimum with index i</li>
+              <li>Left portion grows sorted</li>
             </ul>
           </div>
         )}
+
       </div>
     </div>
   );
 };
 
-export default InsertionSort;
+export default SelectionSort;

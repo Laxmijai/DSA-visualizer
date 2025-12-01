@@ -1,6 +1,6 @@
 import React from "react";
 import { FiChevronRight } from "react-icons/fi";
-
+import { NavLink } from "react-router-dom";
 const Array = () => {
   const searching = ["Linear Search", "Binary Search"];
 
@@ -13,8 +13,10 @@ const Array = () => {
   ];
 
   // Card Component (same as Stack & Queue)
-  const Card = ({ title }) => (
-    <div
+  const Card = ({ title,to }) => (
+    <NavLink
+      to={to}
+      
       className="
         group flex items-center justify-between
         px-6 py-4
@@ -32,7 +34,10 @@ const Array = () => {
       <FiChevronRight
         className="text-gray-500 text-lg group-hover:text-blue-600 transition-all duration-300 ease-in-out"
       />
-    </div>
+   
+    
+
+    </NavLink>
   );
 
   return (
@@ -66,12 +71,17 @@ const Array = () => {
             <div className="w-1 h-6 bg-blue-600 rounded"></div>
             <h2 className="text-xl font-semibold text-gray-900">Searching</h2>
           </div>
-
+             
           <div className="flex flex-wrap gap-4">
             {searching.map((algo, i) => (
-              <Card key={i} title={algo} />
+              <Card 
+              key={i} 
+              title={algo} 
+               to={`/array/${algo.toLowerCase().replace(/ /g, "-")}`}
+              />
             ))}
           </div>
+         
         </div>
 
         {/* Sorting Section */}
@@ -83,7 +93,11 @@ const Array = () => {
 
           <div className="flex flex-wrap gap-4">
             {sorting.map((algo, i) => (
-              <Card key={i} title={algo} />
+              <Card 
+              key={i}
+              title={algo} 
+              to={`/array/${algo.toLowerCase().replace(/ /g, "-")}`}
+              />
             ))}
           </div>
         </div>
