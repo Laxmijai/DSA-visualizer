@@ -12,7 +12,7 @@ const Array = () => {
     "Quick Sort",
   ];
 
-  // Card Component (same as Stack & Queue)
+  // Card Component
   const Card = ({ title }) => (
     <div
       className="

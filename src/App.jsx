@@ -1,23 +1,15 @@
-import { BrowserRouter,Routes,Route } from "react-router-dom"
-import Navbar from "./HomePage/Navbar"
-import HeroSection from "./HomePage/HeroSection"
-import Footer from "./HomePage/Footer"
-import Index from "./AlgorithmVisualizer"
 
+import LinearSearchPage from "./Array-Functions/Searching/LinearSearchPage"
+import BinarySearchPage from "./Array-Functions/Searching/BinarySearchPage"
+import PushPopPeek from "./StackFunction/Operation/PushPopPeek"
+import IsEmpty from "./StackFunction/Operation/isEmpty"
+import IsFull from "./StackFunction/Operation/isFull"
+import EnqueueDeque from "./QueueFun/Qoperations/EnqueueDeque"
 function App() {
   return (
     <>
-      
-     <BrowserRouter>
-     <Navbar/>
-     <Routes>
-     <Route path="/" element={<HeroSection/>}></Route> 
-     <Route path="/visualise" element= {<Index/>}></Route>
-     </Routes>
-      <Footer/>
-     </BrowserRouter>
-     
-      
+    <BinarySearchPage/>
+    <EnqueueDeque/>
     </>
   )
 }
