@@ -1,293 +1,335 @@
 import { useState } from "react";
 
 function LinearSearchPage() {
-  const [activeTab, setActiveTab] = useState("visual");
-  const [array, setArray] = useState([14, 26, 33, 47, 58, 69]);
-  const [arraySize, setArraySize] = useState(6);
-  const [target, setTarget] = useState("");
-
-  const [manualValue, setManualValue] = useState(""); // ✅ NEW → Manual Input State
-
-  const [currentIndex, setCurrentIndex] = useState(null);
-  const [foundIndex, setFoundIndex] = useState(null);
-
-  const [isRunning, setIsRunning] = useState(false);
-  const [speed, setSpeed] = useState("normal");
-  const [stepText, setStepText] = useState("");
-  const [resultText, setResultText] = useState("");
-
-  const getDelay = () => (speed === "slow" ? 900 : speed === "fast" ? 250 : 600);
-
+  // Utility to generate random array of given size
   const generateRandomArray = (size) => {
-    const s = Math.max(3, Math.min(size, 12));
-    return Array.from({ length: s }, () => Math.floor(Math.random() * 90) + 10);
+    const n = Math.max(2, Math.min(size, 15)); // clamp between 2 and 15
+    return Array.from({ length: n }, () => Math.floor(Math.random() * 90) + 10);
   };
+
+  const [arraySize, setArraySize] = useState(5);
+  const [arr, setArr] = useState(() => generateRandomArray(5));
+  const [target, setTarget] = useState("");
+  const [foundIndex, setFoundIndex] = useState(null);
+  const [message, setMessage] = useState("");
 
   const handleGenerateArray = () => {
-    const s = Number(arraySize) || 6;
-    const safe = Math.max(3, Math.min(s, 12));
-    setArraySize(safe);
-    const arr = generateRandomArray(safe);
-    setArray(arr);
-    setCurrentIndex(null);
+    const sizeNumber = Number(arraySize) || 5;
+    const safeSize = Math.max(2, Math.min(sizeNumber, 15));
+    setArraySize(safeSize);
+    setArr(generateRandomArray(safeSize));
     setFoundIndex(null);
-    setStepText("New array generated ✓");
-    setResultText("");
-  };
-
-  const handleAddManual = () => {               // ⭐ NEW FEATURE
-    if (!manualValue.trim()) return setStepText("Enter value first.");
-    const num = Number(manualValue);
-    if (isNaN(num)) return setStepText("Enter valid number.");
-    setArray([...array, num]);
-    setManualValue("");
-    setStepText(`Value ${num} added to array.`);
-  };
-
-  const handleClear = () => {
-    setArray([]);
-    setCurrentIndex(null);
-    setFoundIndex(null);
-    setTarget("");
-    setStepText("Array cleared.");
-    setResultText("");
+    setMessage("");
   };
 
   const handleReset = () => {
-    setCurrentIndex(null);
+    setTarget("");
     setFoundIndex(null);
-    setStepText("Visualization reset.");
-    setResultText("");
+    setMessage("");
   };
 
-  const handleStart = async () => {
-    if (isRunning) return;
-    if (!array.length) return setStepText("Generate an array first.");
-    if (!target.trim()) return setStepText("Enter a target value.");
+  const handleSearch = () => {
+    if (target === "") {
+      setMessage("Please enter a target value first.");
+      setFoundIndex(null);
+      return;
+    }
 
-    const t = Number(target);
-    if (Number.isNaN(t)) return setStepText("Target must be a number.");
-
-    setIsRunning(true);
-    setCurrentIndex(null);
-    setFoundIndex(null);
-    setStepText(`Searching for ${t}...`);
-    setResultText("");
-
-    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-    const stepDelay = getDelay();
-
-    let found = -1;
-
-    for (let i = 0; i < array.length; i++) {
-      setCurrentIndex(i);
-      setStepText(`Checking index ${i} → (${array[i]})`);
-      await delay(stepDelay);
-
-      if (array[i] === t) {
-        found = i;
-        setFoundIndex(i);
-        setStepText(`🎉 Found ${t} at index ${i}`);
-        setResultText(`Element ${t} found at index ${i}`);
+    const numTarget = Number(target);
+    let index = -1;
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] === numTarget) {
+        index = i;
         break;
       }
     }
 
-    if (found === -1) {
-      setStepText("🔍 Search completed — No match found.");
-      setResultText(`Element ${t} not found ❌`);
+    if (index === -1) {
+      setFoundIndex(null);
+      setMessage(`Element ${numTarget} not found in the array.`);
+    } else {
+      setFoundIndex(index);
+      setMessage(`Element ${numTarget} found at index ${index}.`);
     }
-
-    setCurrentIndex(null);
-    setIsRunning(false);
   };
 
-  const linearSearchCode = `function linearSearch(arr, target) {
+  const linearSearchCode = `// Linear Search in JavaScript
+function linearSearch(arr, target) {
   for (let i = 0; i < arr.length; i++) {
-    if (arr[i] === target) return i;
+    if (arr[i] === target) {
+      return i; // index if found
+    }
   }
-  return -1;
+  return -1; // not found
+}
+
+// example
+const numbers = [10, 20, 30, 40, 50];
+const target = 30;
+const result = linearSearch(numbers, target);
+
+if (result !== -1) {
+  console.log("Element found at index:", result);
+} else {
+  console.log("Element not found");
 }`;
 
   return (
-    <section className="min-h-screen pt-10 pb-10 bg-gradient-to-br from-slate-50 to-slate-200">
-      <div className="max-w-5xl mx-auto px-5">
+    <section className="min-h-screen pt-24 pb-16 bg-slate-50">
+      <div className="max-w-5xl mx-auto px-4 md:px-6 space-y-10">
+        {/* Breadcrumb + heading */}
+        <div className="space-y-2">
+          <div className="text-sm text-slate-500">Visualizer / Searching</div>
 
-        <header className="mb-10 text-center">
-          <h1 className="text-5xl font-extrabold text-slate-900 tracking-wide drop-shadow-md">
-              Linear Search Visualizer
-          </h1>
-          <p className="mt-2 text-lg text-slate-700">
-            Watch how each element is scanned step-by-step.
-          </p>
-        </header>
-
-        {/* Tabs */}
-        <div className="flex w-max mx-auto overflow-hidden rounded-xl border shadow bg-white">
-          <button onClick={() => setActiveTab("visual")}
-            className={`px-6 py-2 font-semibold ${activeTab === "visual" ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}>
-            Visualization
-          </button>
-
-          <button onClick={() => setActiveTab("explain")}
-            className={`px-6 py-2 font-semibold ${activeTab === "explain" ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"}`}>
-            Explanation
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900">
+              Linear Search
+            </h1>
+            <span className="bg-slate-100 px-3 py-1 rounded-full text-xs font-semibold text-slate-700">
+              Searching
+            </span>
+          </div>
         </div>
 
-        {/* ====================== VISUAL TAB ====================== */}
-        {activeTab === "visual" && (
-          <div className="mt-10 grid md:grid-cols-[360px,1fr] gap-10"> {/* Slightly Bigger 🟢 */}
+        {/* 🔝 Visualization section on top */}
+        <section className="space-y-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+            Visualize Linear Search
+          </h2>
 
-            {/* CONTROL PANEL */}
-            <div className="border bg-white p-7 rounded-2xl shadow-xl scale-[1.06] transition-all duration-300">
-              <h2 className="text-xl font-bold text-slate-900 mb-4">⚙ Control Panel</h2>
+          <p className="text-base md:text-lg text-slate-700 leading-relaxed">
+            Use the controls below to generate an array of any size and search
+            for a target value. The size of the array will depend on your input.
+          </p>
 
-              {/* Speed */}
-              <p className="font-semibold text-sm mb-2">Animation Speed</p>
-              <div className="flex gap-3 mb-6">
-                {["slow", "normal", "fast"].map(sp => (
-                  <button key={sp} disabled={isRunning} onClick={() => setSpeed(sp)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-semibold border capitalize transition
-                    ${speed === sp ? "bg-slate-900 text-white shadow-md scale-105"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}>
-                    {sp}
-                  </button>
-                ))}
-              </div>
-
-              {/* Array Size */}
-              <p className="font-semibold text-sm">Array Size (3–12)</p>
-              <div className="flex gap-3 mt-1 mb-6">
-                <input type="number" min="3" max="12" disabled={isRunning}
-                  value={arraySize} onChange={(e) => setArraySize(e.target.value)}
-                  className="w-24 px-3 py-2 border rounded-lg shadow-sm text-sm font-medium" />
-
-                <button onClick={handleGenerateArray} disabled={isRunning}
-                  className="flex-1 bg-slate-900 hover:bg-black text-white rounded-lg py-2 shadow font-semibold">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-4">
+            {/* Array size and generate */}
+            <div className="space-y-2">
+              <p className="text-sm md:text-base font-semibold text-slate-600">
+                Array Size
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  type="number"
+                  min="2"
+                  max="15"
+                  value={arraySize}
+                  onChange={(e) => setArraySize(e.target.value)}
+                  className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-base md:text-lg outline-none focus:border-indigo-500"
+                />
+                <button
+                  onClick={handleGenerateArray}
+                  className="px-4 py-2 text-base md:text-lg font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800"
+                >
                   Generate Array
                 </button>
               </div>
-
-              {/* Manual Add ⭐ */}
-              <p className="font-semibold text-sm">Add Manual Value</p>
-              <div className="flex gap-3 mt-1 mb-6">
-                <input type="number" disabled={isRunning}
-                  value={manualValue}
-                  onChange={(e) => setManualValue(e.target.value)}
-                  placeholder="Enter value..."
-                  className="w-28 px-3 py-2 border rounded-lg shadow-sm text-sm font-medium" />
-                  
-                <button onClick={handleAddManual} disabled={isRunning}
-                  className="flex-1 bg-indigo-600 text-white rounded-lg py-2 font-bold hover:bg-indigo-700">
-                  ➕ Add
-                </button>
-              </div>
-
-              {/* Target */}
-              <p className="font-semibold text-sm">Search Target</p>
-              <input type="number" disabled={isRunning} value={target}
-                onChange={(e) => setTarget(e.target.value)}
-                placeholder="Enter search value"
-                className="w-full px-3 py-2 mb-6 border rounded-lg shadow-sm font-medium" />
-
-              {/* Buttons */}
-              <div className="flex flex-col gap-3">
-                <button onClick={handleStart} disabled={isRunning}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg shadow-lg">
-                  {isRunning ? "Searching..." : "▶ Start Searching"}
-                </button>
-
-                <div className="flex gap-3">
-                  <button onClick={handleReset} disabled={isRunning}
-                    className="flex-1 bg-yellow-300 rounded-lg py-2 font-bold">Reset</button>
-                  <button onClick={handleClear} disabled={isRunning}
-                    className="flex-1 bg-red-300 rounded-lg py-2 font-bold">Clear</button>
-                </div>
-              </div>
-            </div>
-
-            {/* ====================== VISUAL AREA (BIGGER) ====================== */}
-            <div className="rounded-xl p-8 shadow-xl border bg-gradient-to-br from-indigo-400/20 via-purple-300/20 to-blue-300/20 backdrop-blur-xl scale-[1.03]">
-              <h2 className="font-bold text-lg mb-4 text-slate-900">Visualization</h2>
-
-              <div className="flex flex-wrap justify-center gap-6 items-end py-5">
-                {array.map((val, i) => {
-                  const active = i === currentIndex;
-                  const found = i === foundIndex;
-
-                  return (
-                    <div key={i} className="flex flex-col items-center relative">
-                      {active && <span className="absolute -top-6 text-xl animate-bounce">⬇</span>}
-
-                      <div className={`w-16 h-32 flex items-center justify-center text-lg font-bold
-                        rounded-xl duration-500 shadow-md transition-all
-                        ${found ? "bg-green-500 text-white scale-110 shadow-2xl"
-                        : active ? "bg-yellow-400 scale-110 shadow-xl"
-                        : "bg-white border hover:scale-105"}`}>
-                        {val}
-                      </div>
-
-                      <span className="text-xs mt-1 text-slate-600">index {i}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Step Info */}
-              {stepText && (
-                <div className="mt-4 py-2 px-3 rounded-md bg-slate-900 text-white text-center font-semibold">
-                  {stepText}
-                </div>
-              )}
-
-              {/* Result — Now Red if not found ❗ */}
-              {resultText && (
-                <p className={`mt-2 text-center text-lg font-bold 
-                  ${resultText.includes("not") ? "text-red-600" : "text-green-600"}`}>
-                  {resultText}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ====================== EXPLANATION TAB ====================== */}
-        {activeTab === "explain" && (
-          <div className="mt-10 space-y-8">
-
-            <div>
-              <h2 className="text-3xl font-bold">What is Linear Search?</h2>
-              <p className="mt-2 text-lg text-slate-700">
-                Linear search scans elements one-by-one until the target is found.
+              <p className="text-xs text-slate-500">
+                Minimum size: 2, Maximum size: 15
               </p>
             </div>
 
-            <div>
-              <h2 className="text-3xl font-bold">Algorithm Steps</h2>
-              <ul className="mt-2 list-decimal list-inside text-lg space-y-1 text-slate-700">
-                <li>Start from index 0</li>
-                <li>Compare target with each element</li>
-                <li>If equal → return index</li>
-                <li>Else continue until end</li>
-                <li>If no match → return -1</li>
-              </ul>
+            {/* Array display */}
+            <div className="space-y-2">
+              <p className="text-sm md:text-base font-semibold text-slate-600">
+                Array Elements
+              </p>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {arr.map((val, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex-1 min-w-[48px] rounded-lg border py-3 text-center text-base md:text-lg font-semibold ${
+                      idx === foundIndex
+                        ? "bg-green-100 border-green-400 text-green-800"
+                        : "bg-slate-100 border-slate-300 text-slate-800"
+                    }`}
+                  >
+                    {val}
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div>
-              <h2 className="text-3xl font-bold">Time Complexity</h2>
-              <p className="mt-2 text-lg"><b>Worst Case →</b> O(n)</p>
-              <p className="text-lg"><b>Best Case →</b> O(1)</p>
+            {/* Target + actions */}
+            <div className="space-y-2">
+              <p className="text-sm md:text-base font-semibold text-slate-600">
+                Target Element
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  type="number"
+                  value={target}
+                  onChange={(e) => setTarget(e.target.value)}
+                  placeholder="Enter target"
+                  className="flex-1 min-w-[140px] rounded-lg border border-slate-300 px-3 py-2 text-base md:text-lg outline-none focus:border-indigo-500"
+                />
+                <button
+                  onClick={handleSearch}
+                  className="px-4 py-2 text-base md:text-lg font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                >
+                  Go
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="px-4 py-2 text-base md:text-lg font-semibold rounded-lg border border-slate-300 text-slate-800 hover:bg-slate-100"
+                >
+                  Reset
+                </button>
+              </div>
             </div>
 
-            <div>
-              <h2 className="text-3xl font-bold">Implementation (JS)</h2>
-              <pre className="bg-slate-900 text-white p-4 rounded-lg mt-3 overflow-x-auto text-sm">
-                {linearSearchCode}
-              </pre>
-            </div>
+            {/* Message */}
+            {message && (
+              <p className="text-base md:text-lg text-slate-700 mt-2">
+                {message}
+              </p>
+            )}
           </div>
-        )}
+        </section>
+
+        {/* 📖 Theory sections (shown further down on scroll) */}
+
+        {/* What is Linear Search */}
+        <section className="space-y-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+            What is Linear Search?
+          </h2>
+
+          <p className="text-base md:text-lg text-slate-700 leading-relaxed">
+            Linear search is a simple searching technique where each element in
+            the list is checked one by one until the target value is found or
+            the end is reached. If a match is found, the index is returned;
+            otherwise, the element is not present.
+          </p>
+        </section>
+
+        {/* How does it work */}
+        <section className="space-y-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+            How does it work?
+          </h2>
+
+          <p className="text-base md:text-lg text-slate-700 leading-relaxed">
+            Consider an array like <code>[5, 3, 8, 1, 9]</code>. If you want to
+            search for <code>8</code>, the algorithm:
+          </p>
+
+          <ul className="list-disc list-inside space-y-2 text-base md:text-lg text-slate-700">
+            <li>Starts at the first element.</li>
+            <li>Moves through the array element by element.</li>
+            <li>Compares each value with the target (here, 8).</li>
+            <li>Stops when it finds a match and returns the index.</li>
+            <li>
+              If it never finds the value, it returns <code>-1</code>.
+            </li>
+          </ul>
+        </section>
+
+        {/* Algorithm Steps */}
+        <section className="space-y-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+            Algorithm Steps
+          </h2>
+
+          <ol className="list-decimal list-inside space-y-2 text-base md:text-lg text-slate-700">
+            <li>Start from the first element.</li>
+            <li>Compare the current element with the target.</li>
+            <li>If they are equal, return the index.</li>
+            <li>If not equal, move to the next element.</li>
+            <li>If you reach the end, return -1.</li>
+          </ol>
+        </section>
+
+        {/* Time Complexity */}
+        <section className="space-y-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+            Time Complexity
+          </h2>
+
+          <ul className="list-disc list-inside space-y-2 text-base md:text-lg text-slate-700">
+            <li>
+              <span className="font-bold">Best Case:</span> O(1) — target is at
+              the first position.
+            </li>
+            <li>
+              <span className="font-bold">Worst Case:</span> O(n) — target is at
+              the last position or not present.
+            </li>
+          </ul>
+
+          <p className="text-base md:text-lg text-slate-700 leading-relaxed">
+            Linear search works on both sorted and unsorted lists, but for large
+            datasets it is slower than more efficient algorithms like binary
+            search.
+          </p>
+        </section>
+
+        {/* Implementation */}
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+              Linear Search Implementation
+            </h2>
+
+            <button className="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-sm font-semibold">
+              Copy Code
+            </button>
+          </div>
+
+          {/* Language tabs (UI only) */}
+          <div className="flex flex-wrap gap-2 text-sm font-semibold">
+            <button className="px-3 py-1 rounded-full bg-slate-900 text-white">
+              JavaScript
+            </button>
+            <button className="px-3 py-1 rounded-full bg-slate-100">
+              Python
+            </button>
+            <button className="px-3 py-1 rounded-full bg-slate-100">
+              Java
+            </button>
+            <button className="px-3 py-1 rounded-full bg-slate-100">
+              C
+            </button>
+            <button className="px-3 py-1 rounded-full bg-slate-100">
+              C++
+            </button>
+          </div>
+
+          {/* Code block */}
+          <div className="rounded-xl border border-slate-300 overflow-hidden bg-slate-900 text-slate-100">
+            <div className="flex items-center gap-2 bg-slate-800 px-4 py-2 text-sm text-slate-400">
+              <span className="h-2 w-2 rounded-full bg-red-500" />
+              <span className="h-2 w-2 rounded-full bg-yellow-400" />
+              <span className="h-2 w-2 rounded-full bg-green-500" />
+              <span className="ml-2">linearSearch.js</span>
+            </div>
+            <pre className="p-4 text-sm md:text-base overflow-x-auto">
+              <code>{linearSearchCode}</code>
+            </pre>
+          </div>
+        </section>
+
+        {/* Done / Explore */}
+        <section className="space-y-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+            Done with the learning?
+          </h2>
+
+          <button className="px-4 py-2 text-base md:text-lg font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
+            Mark as Done
+          </button>
+
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+            Explore other operations
+          </h2>
+
+          <a
+            href="/visualizer/searching/binarysearch"
+            className="inline-flex items-center px-4 py-2 rounded-lg border border-slate-300 bg-white text-base md:text-lg font-semibold text-slate-800 hover:bg-slate-100"
+          >
+            Binary Search
+          </a>
+        </section>
       </div>
     </section>
   );

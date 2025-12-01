@@ -1,3 +1,8 @@
+import { BrowserRouter,Routes,Route } from "react-router-dom"
+import Navbar from "./HomePage/Navbar"
+import HeroSection from "./HomePage/HeroSection"
+import Footer from "./HomePage/Footer"
+import Index from "./AlgorithmVisualizer"
 
 import LinearSearchPage from "./Array-Functions/Searching/LinearSearchPage";
 import BinarySearchPage from "./Array-Functions/Searching/BinarySearchPage";

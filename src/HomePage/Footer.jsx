@@ -1,5 +1,3 @@
-import { NavLink } from "react-router-dom";
-
 function Footer() {
   return (
     <footer className="bg-black py-10 mt-20 border-t border-slate-800">
@@ -18,9 +16,9 @@ function Footer() {
 
         {/* Middle Navigation Links */}
         <div className="flex flex-wrap justify-center gap-6 text-sm font-medium">
-          <NavLink to="/" className="text-slate-300 hover:text-indigo-400 transition">Home</NavLink>
-          <NavLink to="/features" className="text-slate-300 hover:text-indigo-400 transition">Features</NavLink>
-          <NavLink to="/visualise" className="text-slate-300 hover:text-indigo-400 transition">Visualise</NavLink>
+          <a href="#home" className="text-slate-300 hover:text-indigo-400 transition">Home</a>
+          <a href="#features" className="text-slate-300 hover:text-indigo-400 transition">Features</a>
+          <a href="#features" className="text-slate-300 hover:text-indigo-400 transition">Visualise</a>
           
         </div>
 
