@@ -1,3 +1,6 @@
+
+import { NavLink } from "react-router-dom";
+
 function HeroSection() {
   return (
     <section
@@ -28,10 +31,11 @@ function HeroSection() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+            <NavLink to="/visualise">
             <button className="px-6 py-3 text-base md:text-lg font-semibold rounded-xl bg-indigo-600 text-white shadow-md hover:bg-indigo-700 transition">
               Start Visualizing
             </button>
-
+            </NavLink>
             <button className="px-6 py-3 text-base md:text-lg font-semibold rounded-xl border border-slate-300 text-slate-800 hover:border-indigo-500 hover:text-indigo-600 transition">
               View Algorithms
             </button>
